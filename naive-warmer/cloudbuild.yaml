@@ -1,0 +1,39 @@
+steps:
+  - name: docker
+    args:
+      [
+        "build",
+        "-t",
+        "asia-northeast1-docker.pkg.dev/${PROJECT_ID}/warmer/${_IMAGE_NAME}:latest",
+        ".",
+      ]
+
+  - name: "docker"
+    args:
+      [
+        "push",
+        "asia-northeast1-docker.pkg.dev/${PROJECT_ID}/warmer/${_IMAGE_NAME}:latest",
+      ]
+
+  - name: "gcr.io/google.com/cloudsdktool/google-cloud-cli:alpine"
+    entrypoint: "gcloud"
+    args:
+      [
+        "run",
+        "deploy",
+        "${_IMAGE_NAME}",
+        "--image",
+        "asia-northeast1-docker.pkg.dev/${PROJECT_ID}/warmer/${_IMAGE_NAME}:latest",
+        "--region",
+        "asia-northeast1",
+        "--max-instances",
+        "1",
+        "--ingress",
+        "internal",
+        "--set-env-vars",
+        "WORKFLOW=${_WORKFLOW}",
+      ]
+
+substitutions:
+  _IMAGE_NAME: default
+  _WORKFLOW: default

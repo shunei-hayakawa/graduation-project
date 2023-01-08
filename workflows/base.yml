@@ -1,0 +1,45 @@
+main:
+  params: [args]
+  steps:
+    - starter:
+        call: http.post
+        args:
+          url: https://asia-northeast1-graduation-project-2-365804.cloudfunctions.net/base_starter
+          headers:
+            content-type: application/json
+          body:
+            input: ${args.num}
+          auth:
+            type: OIDC
+        result: output
+    - updater:
+        call: http.post
+        args:
+          url: https://asia-northeast1-graduation-project-2-365804.cloudfunctions.net/base_updater
+          headers:
+            content-type: application/json
+          body:
+            input: ${output.body.data}
+          auth:
+            type: OIDC
+    - branch:
+        switch:
+          - condition: ${output.body.data > 3}
+            next: path-a
+          - condition: ${output.body.data <= 3}
+            next: path-b
+        next: end
+    - path-a:
+        call: http.post
+        args:
+          url: https://asia-northeast1-graduation-project-2-365804.cloudfunctions.net/base_path-a
+          auth:
+            type: OIDC
+        next: end
+    - path-b:
+        call: http.post
+        args:
+          url: https://asia-northeast1-graduation-project-2-365804.cloudfunctions.net/base_path-b
+          auth:
+            type: OIDC
+        next: end
